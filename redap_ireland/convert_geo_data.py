@@ -4,7 +4,7 @@ import logging
 
 import helper
 
-logger = logging.getLogger('data.cleaning.residential')
+logger = logging.getLogger('data_cleaning.residential')
 
 
 list_of_counties = ['Dublin City', 'Dún Laoghaire-Rathdown', 'Fingal', 'South Dublin', 'DUBLIN']

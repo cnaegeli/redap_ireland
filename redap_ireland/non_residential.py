@@ -21,7 +21,7 @@ import logging
 import contextily as ctx
 import matplotlib.pyplot as plt
 
-logger = logging.getLogger('data.cleaning.non_residential')
+logger = logging.getLogger('data_cleaning.non_residential')
 
 def load_and_clean_data(filenames_data, filename_categories):
     use_categories = pd.read_csv(filename_categories, delimiter=";", header=[0], index_col=[0,1])
@@ -186,13 +186,15 @@ def generate_stock(
         'category': 'first', 
         'uses': 'first', 
         'use_1': 'first', 
-        'building_use_type': 'first', 
+        'building_use_type': 'first',
+        'building_type': 'first',
         'x_coord': 'first', 
         'y_coord': 'first', 
         'floor_area': 'sum', 
         })
+    building_usages['usage_id'] = building_usages.index
     building_usages = building_usages.merge(
-        buildings[['building_id','x_coord', 'y_coord']], 
+        buildings[['building_id', 'x_coord', 'y_coord']],
         left_on=['x_coord', 'y_coord'], 
         right_on=['x_coord', 'y_coord'],
         how='left'
@@ -233,10 +235,10 @@ def generate_stock(
     
     logger.info('Write output data')
     buildings.to_csv(
-        os.path.join(output_dir, 'Dublin_Non_Residential_Buildings.csv'), sep=';', header=True
+        os.path.join(output_dir, 'Dublin_Non_Residential_Buildings.csv'), sep=';', header=True, index=True
     )
     building_usages.to_csv(
-        os.path.join(output_dir, 'Dublin_Non_Residential_Building_Usages.csv'), sep=';', header=True
+        os.path.join(output_dir, 'Dublin_Non_Residential_Building_Usages.csv'), sep=';', header=True, index=True
     )
     
     

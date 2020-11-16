@@ -5,6 +5,7 @@ import logging
 import convert_geo_data
 import residential
 import non_residential
+import analysis
 
 DEBUG = False
 
@@ -12,8 +13,9 @@ DEBUG = False
 CONVERT_GEODATA = False
 GENERATE_RESIDENTIAL_STOCK = False
 GENERATE_NON_RESIDENTIAL_STOCK = True
+ANALYSE_DATA = False
 EPSG = 2157
-LOAD_CLEANED_DATA_FILES = False
+LOAD_CLEANED_DATA_FILES = True
 
 start_time = time.time()
 intermediate_time = time.time()
@@ -58,6 +60,12 @@ dir_output_building_data = os.path.join(
 )
 if not os.path.exists(dir_output_building_data):
     os.mkdir(dir_output_building_data)
+dir_output_analysis= os.path.join(
+    dir_output,
+    "Analysis",
+)
+if not os.path.exists(dir_output_analysis):
+    os.mkdir(dir_output_analysis)
 
 dir_logs = os.path.join(
     dir_output,
@@ -96,6 +104,7 @@ filenames_non_residential = {
     'small_area_geodata': os.path.join(dir_output_geodata, "Dublin_small_areas.geojson"),
 }
 
+
 # set up logging
 logger = logging.getLogger('data_cleaning')
 logger.setLevel(logging.DEBUG if DEBUG else logging.INFO)
@@ -114,7 +123,7 @@ logger.addHandler(logger_console_handler)
 
 
 if CONVERT_GEODATA:
-    logger.info('Covnert geo data')
+    logger.info('Convert geo data')
     convert_geo_data.convert_all_geodata(
         filenames_orig_geodata,
         dir_output_geodata, 
@@ -124,7 +133,7 @@ if CONVERT_GEODATA:
                 f"{int((time.time() - intermediate_time)/60)} min")
     intermediate_time = time.time()
 else:
-    logger.info('Skipped step: Covnert geo data')
+    logger.info('Skipped step: Convert geo data')
 
 if GENERATE_RESIDENTIAL_STOCK:
     logger.info('Generate residential stock')
@@ -154,6 +163,17 @@ if GENERATE_NON_RESIDENTIAL_STOCK:
 else:
     logger.info('Skipped step: Generate res-residential stock')
 
+if ANALYSE_DATA:
+    logger.info('Analyse data')
+    data = analysis.analyse_ber_data(
+        filenames_residential['ber_data_cleaned'],
+        dir_output_analysis,
+        )
+    logger.info(f"Analysed data in "
+                f"{int((time.time() - intermediate_time) / 60)} min")
+    intermediate_time = time.time()
+else:
+    logger.info('Skipped step: Analyse data')
 
 logger.info(f"Finished in {int(time.time() - start_time)} seconds")
 

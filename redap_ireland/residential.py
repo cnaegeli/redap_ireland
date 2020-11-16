@@ -29,7 +29,7 @@ import logging
 
 import helper
 
-logger = logging.getLogger('data.cleaning.residential')
+logger = logging.getLogger('data_cleaning.residential')
 
 def load_and_clean_small_area_data(filename):
     
