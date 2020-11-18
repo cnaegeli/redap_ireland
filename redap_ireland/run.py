@@ -11,11 +11,11 @@ DEBUG = False
 
 # control
 CONVERT_GEODATA = False
-GENERATE_RESIDENTIAL_STOCK = False
+GENERATE_RESIDENTIAL_STOCK = True
 GENERATE_NON_RESIDENTIAL_STOCK = True
-ANALYSE_DATA = False
+ANALYSE_DATA = True
 EPSG = 2157
-LOAD_CLEANED_DATA_FILES = True
+LOAD_CLEANED_DATA_FILES = False
 
 start_time = time.time()
 intermediate_time = time.time()

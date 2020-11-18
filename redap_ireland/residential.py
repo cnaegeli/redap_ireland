@@ -148,6 +148,17 @@ def load_and_clean_ber_data(filename, max_year = 2016):
     data.drop(data[
         (data.UValueWall == 0)
         ].index, inplace=True)
+    data.drop(data[
+        (data['MainSpaceHeatingFuel'].isna())
+        ].index, inplace=True)
+    data.drop(data[
+        (data['MainWaterHeatingFuel'].isna())
+        ].index, inplace=True)
+    data.drop(data[
+        (data['VentilationMethod'].isna())
+        ].index, inplace=True)
+
+
     useful_columns = [
         'CountyName',
         'DwellingTypeDescr',

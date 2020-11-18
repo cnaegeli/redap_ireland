@@ -199,14 +199,21 @@ def generate_stock(
         right_on=['x_coord', 'y_coord'],
         how='left'
         )
-    
+
+
+    logger.info('Filter unrealistic data') # TODO: check what kind of cases these exclude
+    buildings = buildings[buildings['number_of_floors_above_ground']>0]
+    buildings = buildings[buildings['floor_area'] > 40]
+
+    building_usages = building_usages[building_usages['building_id'].isin(buildings['building_id'])]
+
     logger.info('Map buildings to small areas')
     buildings = gpd.GeoDataFrame(
         buildings,
         geometry=gpd.points_from_xy(buildings['x_coord'], buildings['y_coord']),
         crs="EPSG:2157",
     )
-    buildings = gpd.sjoin(buildings, small_areas[['area_id','geometry']], how="inner", op='within')
+    buildings = gpd.sjoin(buildings, small_areas[['area_id', 'geometry']], how="inner", op='within')
 
     logger.info('Complete building data based on small area')
     relevant_small_areas = list(buildings.groupby('area_id').count().index)
@@ -250,7 +257,7 @@ def generate_stock(
         floor_area = floor_area.to_crs(epsg=3857)
         floor_area['floor_area_per_ha'] = floor_area['floor_area'] / floor_area.geometry.area
         
-        fig, ax = plt.subplots(1, figsize=(12, 12))
+        fig, ax = plt.subplots(1, figsize=(10, 12))
         floor_area.plot(
             column='floor_area',
             ax=ax,
@@ -264,9 +271,9 @@ def generate_stock(
             # edgecolor='black',
         )
         ctx.add_basemap(ax, source=ctx.providers.CartoDB.Voyager)
-        fig.savefig(os.path.join(output_dir, "Non_residential_floor_area.png"))
+        fig.savefig(os.path.join(output_dir, "Non_residential_floor_area.png"), dpi=1200)
         
-        fig, ax = plt.subplots(1, figsize=(12, 12))
+        fig, ax = plt.subplots(1, figsize=(12, 10))
         floor_area.plot(
             column='floor_area_per_ha',
             ax=ax,
@@ -280,5 +287,5 @@ def generate_stock(
             # edgecolor='black',
         )
         ctx.add_basemap(ax, source=ctx.providers.CartoDB.Voyager)
-        fig.savefig(os.path.join(output_dir, "Non_residential_floor_area_per_ha.png"))
+        fig.savefig(os.path.join(output_dir, "Non_residential_floor_area_per_ha.png"), dpi=1200)
     # add data based on small area
