@@ -247,8 +247,7 @@ def generate_stock(
     building_usages.to_csv(
         os.path.join(output_dir, 'Dublin_Non_Residential_Building_Usages.csv'), sep=';', header=True, index=True
     )
-    
-    
+
     
     if generate_example_figures:
         logger.info('Generate example maps')

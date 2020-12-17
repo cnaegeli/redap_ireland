@@ -68,7 +68,7 @@ def convert_census_electoral_divisions(filename_census_electoral_divisions, filn
     useful_columns = {
         'CSOED_3409': 'area_id',
         'CSOED_34_1': 'name',
-        'postcodes': 'contained_in',
+        'postcodes': 'contained_in_id',
         'COUNTY': 'county_name',
         'GUID_': 'GUID',
         'ED_ID': 'EDID',
@@ -80,13 +80,13 @@ def convert_census_electoral_divisions(filename_census_electoral_divisions, filn
     census_electoral_divisions.set_index('area_id', inplace=True)
     census_electoral_divisions.sort_index(inplace=True)
     
-    census_electoral_divisions['contained_in'] = np.where(
-        census_electoral_divisions['contained_in'].isna(),
+    census_electoral_divisions['contained_in_id'] = np.where(
+        census_electoral_divisions['contained_in_id'].isna(),
         census_electoral_divisions['name'].map({
             'Rush': 'Co. Dublin',
             'Kilsallaghan': 'Co. Dublin',
             }),
-        census_electoral_divisions['contained_in']
+        census_electoral_divisions['contained_in_id']
         )
     return census_electoral_divisions
 
@@ -121,13 +121,13 @@ def convert_small_areas(filename, epsg):
     useful_columns = {
         'GUID': 'area_id',
         'SA_PUB2011': 'name',
-        'CSOED': 'contained_in',
+        'CSOED': 'contained_in_id',
         'COUNTYNAME': 'county_name',
         'OSIED': 'OSIED',
     }
     small_areas = small_areas[list(useful_columns.keys()) + ['geometry']]
     small_areas.rename(columns=useful_columns, inplace=True)
-    small_areas['contained_in'] = small_areas['contained_in'].astype(int)
+    small_areas['contained_in_id'] = small_areas['contained_in_id'].astype(int)
     small_areas.set_index('area_id', inplace=True)
     small_areas.sort_index(inplace=True)
     
@@ -143,21 +143,21 @@ def convert_all_geodata(filenames, output_dir, epsg):
         epsg
     )
     postcodes = convert_postcodes(filenames['postcodes'], epsg)
-    postcodes = census_electoral_divisions.dissolve(by='contained_in')
+    postcodes = census_electoral_divisions.dissolve(by='contained_in_id')
     postcodes = postcodes[['county_name', 'geometry']]
     postcodes['name'] = postcodes.index
 
     small_areas = convert_small_areas(filenames['small_areas'], epsg)
-    map_postcodes = census_electoral_divisions['contained_in']
+    map_postcodes = census_electoral_divisions['contained_in_id']
     map_postcodes.name = 'postcodes'
 
-    small_areas = small_areas.merge(map_postcodes, left_on='contained_in', right_index=True, how='left')
+    small_areas = small_areas.merge(map_postcodes, left_on='contained_in_id', right_index=True, how='left')
     small_areas['postcodes'] = np.where(
             small_areas['postcodes'].isna(),
             'Dublin 8',
             small_areas['postcodes']
             )
-    # census_electoral_divisions = small_areas.dissolve(by='contained_in')
+    # census_electoral_divisions = small_areas.dissolve(by='contained_in_id')
     postcodes = small_areas.dissolve(by='postcodes')
     postcodes = postcodes[['county_name', 'geometry']]
     postcodes['name'] = postcodes.index
