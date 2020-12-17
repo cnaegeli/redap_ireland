@@ -146,7 +146,15 @@ def load_and_clean_ber_data(filename, max_year = 2016):
         (data.UValueWindow == 0)
         ].index, inplace=True)
     data.drop(data[
-        (data.UValueWall == 0)
+        (data.UValueWall < 0.1)
+        ].index, inplace=True)
+    data.drop(data[
+        (data.UValueRoof < 0.1) &
+        (data.AreaRoof > 0)
+        ].index, inplace=True)
+    data.drop(data[
+        (data.UValueFloor < 0.1) &
+        (data.FloorRoof > 0)
         ].index, inplace=True)
     data.drop(data[
         (data['MainSpaceHeatingFuel'].isna())
@@ -157,7 +165,15 @@ def load_and_clean_ber_data(filename, max_year = 2016):
     data.drop(data[
         (data['VentilationMethod'].isna())
         ].index, inplace=True)
-
+    data['total_floor_area'] = (
+            data['GroundFloorArea']
+            + data['FirstFloorArea']
+            + data['SecondFloorArea']
+            + data['ThirdFloorArea']
+    )
+    data.drop(data[
+        (data['VentilationMethod']==0)
+        ].index, inplace=True)
 
     useful_columns = [
         'CountyName',
@@ -508,73 +524,6 @@ def generate_stock(
         ctx.add_basemap(ax, source=ctx.providers.CartoDB.Voyager)
         fig.savefig(os.path.join(output_dir,"Residential_heat_demand_density.png"))
 """
-
-all_buildings, all_dwellings, all_stats = zs.synthesize_all_zones(
-    marginals_buildings, 
-    marginals_dwellings, 
-    sample_building_stock,
-    sample_dwelling_stock, 
-    crosswalk
-    )
-
-all_buildings.rename(columns={
-    'household_id': 'building_id',
-    'geog': 'area_id',
-    }, inplace=True)
-all_dwellings.rename(columns={
-    'household_id': 'building_id',
-    'geog': 'area_id',
-    }, inplace=True)
-all_dwellings[all_dwellings['energy_carrier_space_heating']!='No central heating']
-
-
-output_dir =  os.path.join(
-    base_dir,
-    "data",
-    "Ireland", 
-    "output",
-)
-all_dwellings.to_csv(
-    os.path.join(output_dir, 'Dublin_Dwellings.csv'), sep=';', header=True
-)
-all_stats.to_csv(
-    os.path.join(output_dir, 'Dublin_stats.csv'), sep=';', header=True
-)
-
-data = ber_data[ber_data['building_type']=='Multi-dwelling building']
-a = data.groupby([
-    'CountyName',
-    'building_type',
-    'Year_of_Construction',
-    'TypeofRating',
-    'UValueWall',
-    'UValueWindow',
-    'MainSpaceHeatingFuel',
-    'HSMainSystemEfficiency',
-    'SupplSHFuel',
-    'HSSupplSystemEff',
-    'MainWaterHeatingFuel',
-    'WHMainSystemEff',
-    'SupplWHFuel',
-    'SolarHotWaterHeating',
-    'VentilationMethod',
-    'FanPowerManuDeclaredValue',
-    'HeatExchangerEff',
-    'StructureType',
-    'ThermalMassCategory',
-    ]).count()
-
-filename_census =  os.path.join(
-    base_dir,
-    "data",
-    "Ireland",
-    "Residential",
-    "Census 54954 Private Households in Perm House Units by Accom, Year Blt in Dublin_ EDs, 2016.xlsx"
-)
-census_data = load_and_clean_census_data(filename_census)
-
-
-
 ['CountyName',
  'DwellingTypeDescr',
  'Year_of_Construction',
@@ -778,11 +727,5 @@ census_data = load_and_clean_census_data(filename_census)
  'ThirdWallIsSemiExposed',
  'ThirdWallAgeBandId',
  'ThirdWallTypeId']
-
-# output = result.drop(result[result['total'] == 0].index)
-
-# writer = pd.ExcelWriter("BSM_CH_HeatingSystemStructure.xlsx")
-# output.to_excel(writer, 'weights')
-# writer.save()
 
 """
